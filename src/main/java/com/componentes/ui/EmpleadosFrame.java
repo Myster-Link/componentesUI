@@ -15,6 +15,14 @@ public class EmpleadosFrame extends javax.swing.JFrame {
      */
     public EmpleadosFrame() {
         initComponents();
+        
+          setTitle("Panel empleado");
+
+        // Configura la operación por defecto al cerrar la ventana
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        // Centra el frame en la pantalla
+        setLocationRelativeTo(null);
     }
 
     /**
