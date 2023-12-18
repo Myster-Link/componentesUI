@@ -5,6 +5,7 @@
 package com.componentes.ui;
 
 import com.componentes.controllers.AuthController;
+import com.componentes.controllers.PersistenceManager;
 import com.componentes.entitys.Usuarios;
 import com.componentes.enums.Rol;
 import java.awt.Cursor;
@@ -167,6 +168,8 @@ public class LoginFrame extends javax.swing.JFrame {
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Rellene los campos correctamente!!!", "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            PersistenceManager.closeEntityManagerFactory();
         }
 
 

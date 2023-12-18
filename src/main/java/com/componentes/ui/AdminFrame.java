@@ -4,6 +4,15 @@
  */
 package com.componentes.ui;
 
+import com.componentes.controllers.PersistenceManager;
+import com.componentes.services.*;
+import com.componentes.entitys.*;
+import jakarta.persistence.EntityManager;
+import javax.swing.JOptionPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author mysterlink
@@ -13,9 +22,21 @@ public class AdminFrame extends javax.swing.JFrame {
     /**
      * Creates new form MainFrame
      */
+    Proyectos proyecto;
+    Empleados empleado;
+    Comentario comentario;
+
+    ProyectoService proyectoService;
+    EmpleadoService empleadoService;
+    ComentarioService comentarioService;
+
+    EntityManager em;
+
     public AdminFrame() {
         initComponents();
-        
+
+        em = PersistenceManager.getEntityManager();
+
         setTitle("Panel admin");
 
         // Configura la operación por defecto al cerrar la ventana
@@ -23,6 +44,57 @@ public class AdminFrame extends javax.swing.JFrame {
 
         // Centra el frame en la pantalla
         setLocationRelativeTo(null);
+
+        rellenarTabla();
+        rellenarTablaComentarios();
+
+        proyecto = new Proyectos();
+
+        jTable3.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                // Verificar si la selección de fila cambió
+                if (!e.getValueIsAdjusting()) {
+                    int selectedRow = jTable3.getSelectedRow();
+                    if (selectedRow != -1) {
+                        // Obtener datos de la fila seleccionada y hacer lo que necesites
+                        Object id = jTable3.getValueAt(selectedRow, 0);
+                        Object nombre = jTable3.getValueAt(selectedRow, 1);
+                        Object lider = jTable3.getValueAt(selectedRow, 2);
+                        Object cedulaLider = jTable3.getValueAt(selectedRow, 3);
+
+                        NombreProyecto.setText(nombre.toString());
+                        CedulaLider.setText(cedulaLider.toString());
+
+                        proyecto = new Proyectos();
+
+                        proyecto.setId(Integer.parseInt(id.toString()));
+                        proyecto.setNombreProyecto(nombre.toString());
+                    }
+                }
+            }
+        });
+
+        TableComentarios.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                // Verificar si la selección de fila cambió
+                if (!e.getValueIsAdjusting()) {
+                    int selectedRow = TableComentarios.getSelectedRow();
+                    if (selectedRow != -1) {
+                        // Obtener datos de la fila seleccionada y hacer lo que necesites
+                        Object id = TableComentarios.getValueAt(selectedRow, 0);
+                        Object text = TableComentarios.getValueAt(selectedRow, 1);
+
+                        ComentarioProyecto.setText(text.toString());
+
+                        comentario = new Comentario();
+
+                        comentario.setId(Integer.parseInt(id.toString()));
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -38,8 +110,8 @@ public class AdminFrame extends javax.swing.JFrame {
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel3 = new javax.swing.JPanel();
         jLabel12 = new javax.swing.JLabel();
-        TxtProyecto2 = new javax.swing.JTextField();
-        TxtCedulaLider1 = new javax.swing.JTextField();
+        NombreProyecto = new javax.swing.JTextField();
+        CedulaLider = new javax.swing.JTextField();
         jLabel13 = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
         jTable3 = new javax.swing.JTable();
@@ -47,9 +119,13 @@ public class AdminFrame extends javax.swing.JFrame {
         BtnLimpiarCamposProyecto = new javax.swing.JButton();
         BtnCancelarProyecto = new javax.swing.JButton();
         jLabel9 = new javax.swing.JLabel();
-        TxtComentarios = new javax.swing.JTextField();
+        ComentarioProyecto = new javax.swing.JTextField();
         BtnGuardarProyecto = new javax.swing.JButton();
         BtnCancelarComentario = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        TableComentarios = new javax.swing.JTable();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         jPanel6 = new javax.swing.JPanel();
         jLabel15 = new javax.swing.JLabel();
@@ -109,22 +185,22 @@ public class AdminFrame extends javax.swing.JFrame {
         jLabel12.setForeground(new java.awt.Color(0, 0, 0));
         jLabel12.setText("Nombre el proyecto");
 
-        TxtProyecto2.setBackground(new java.awt.Color(204, 204, 204));
+        NombreProyecto.setBackground(new java.awt.Color(204, 204, 204));
 
-        TxtCedulaLider1.setBackground(new java.awt.Color(204, 204, 204));
+        CedulaLider.setBackground(new java.awt.Color(204, 204, 204));
 
         jLabel13.setForeground(new java.awt.Color(0, 0, 0));
         jLabel13.setText("Cedula del lider");
 
         jTable3.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null},
+                {null, null, null},
+                {null, null, null},
+                {null, null, null}
             },
             new String [] {
-                "ID", "Nombre del proyecto", "Empleado lider", "Comentarios del proyecto"
+                "ID", "Nombre del proyecto", "Empleado lider"
             }
         ));
         jScrollPane3.setViewportView(jTable3);
@@ -135,27 +211,73 @@ public class AdminFrame extends javax.swing.JFrame {
         BtnGuardarComentarios.setBackground(new java.awt.Color(0, 0, 153));
         BtnGuardarComentarios.setForeground(new java.awt.Color(255, 255, 255));
         BtnGuardarComentarios.setText("Guardar");
+        BtnGuardarComentarios.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnGuardarComentariosActionPerformed(evt);
+            }
+        });
 
         BtnLimpiarCamposProyecto.setBackground(new java.awt.Color(102, 102, 255));
         BtnLimpiarCamposProyecto.setForeground(new java.awt.Color(255, 255, 255));
         BtnLimpiarCamposProyecto.setText("Limpiar campos");
+        BtnLimpiarCamposProyecto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnLimpiarCamposProyectoActionPerformed(evt);
+            }
+        });
 
         BtnCancelarProyecto.setBackground(new java.awt.Color(204, 0, 0));
         BtnCancelarProyecto.setForeground(new java.awt.Color(255, 255, 255));
-        BtnCancelarProyecto.setText("Cancelar");
+        BtnCancelarProyecto.setText("Eliminar");
+        BtnCancelarProyecto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnCancelarProyectoActionPerformed(evt);
+            }
+        });
 
         jLabel9.setForeground(new java.awt.Color(0, 0, 0));
         jLabel9.setText("Agregar comentarios");
 
-        TxtComentarios.setBackground(new java.awt.Color(204, 204, 204));
+        ComentarioProyecto.setBackground(new java.awt.Color(204, 204, 204));
 
         BtnGuardarProyecto.setBackground(new java.awt.Color(0, 0, 153));
         BtnGuardarProyecto.setForeground(new java.awt.Color(255, 255, 255));
         BtnGuardarProyecto.setText("Guardar");
+        BtnGuardarProyecto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnGuardarProyectoActionPerformed(evt);
+            }
+        });
 
         BtnCancelarComentario.setBackground(new java.awt.Color(204, 0, 0));
         BtnCancelarComentario.setForeground(new java.awt.Color(255, 255, 255));
-        BtnCancelarComentario.setText("Cancelar");
+        BtnCancelarComentario.setText("Eliminar");
+        BtnCancelarComentario.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnCancelarComentarioActionPerformed(evt);
+            }
+        });
+
+        TableComentarios.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null},
+                {null, null, null},
+                {null, null, null},
+                {null, null, null}
+            },
+            new String [] {
+                "Id ", "Comentario", "Proyecto"
+            }
+        ));
+        jScrollPane2.setViewportView(TableComentarios);
+
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(204, 102, 255));
+        jLabel1.setText("COMENTARIOS");
+
+        jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(204, 102, 255));
+        jLabel2.setText("PROYECTOS");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -164,39 +286,43 @@ public class AdminFrame extends javax.swing.JFrame {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(ComentarioProyecto))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addContainerGap()
                                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGroup(jPanel3Layout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addGroup(jPanel3Layout.createSequentialGroup()
-                                                .addComponent(BtnGuardarProyecto)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(BtnCancelarProyecto))
-                                            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                                .addComponent(TxtCedulaLider1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
-                                                .addComponent(TxtProyecto2, javax.swing.GroupLayout.Alignment.LEADING))))
-                                    .addGroup(jPanel3Layout.createSequentialGroup()
-                                        .addGap(28, 28, 28)
-                                        .addComponent(BtnLimpiarCamposProyecto))
-                                    .addGroup(jPanel3Layout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addGap(0, 0, Short.MAX_VALUE))
+                                        .addComponent(BtnGuardarProyecto)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(BtnCancelarProyecto))
+                                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addComponent(CedulaLider, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
+                                        .addComponent(NombreProyecto, javax.swing.GroupLayout.Alignment.LEADING))))
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addGap(28, 28, 28)
+                                .addComponent(BtnLimpiarCamposProyecto))
                             .addGroup(jPanel3Layout.createSequentialGroup()
                                 .addContainerGap()
-                                .addComponent(TxtComentarios, javax.swing.GroupLayout.DEFAULT_SIZE, 179, Short.MAX_VALUE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addComponent(BtnGuardarComentarios)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(BtnCancelarComentario)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 862, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addGap(12, 12, 12)
+                                .addComponent(BtnGuardarComentarios)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(BtnCancelarComentario)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 471, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -204,27 +330,37 @@ public class AdminFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel12)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(TxtProyecto2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel13)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(TxtCedulaLider1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(BtnCancelarProyecto)
-                    .addComponent(BtnGuardarProyecto))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(BtnLimpiarCamposProyecto)
-                .addGap(36, 36, 36)
-                .addComponent(jLabel9)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(TxtComentarios, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(BtnGuardarComentarios)
-                    .addComponent(BtnCancelarComentario))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 615, Short.MAX_VALUE)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(NombreProyecto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addComponent(jLabel13)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(CedulaLider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(BtnCancelarProyecto)
+                                    .addComponent(BtnGuardarProyecto))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(BtnLimpiarCamposProyecto)
+                                .addGap(36, 36, 36)
+                                .addComponent(jLabel9)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(ComentarioProyecto, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(BtnGuardarComentarios)
+                                    .addComponent(BtnCancelarComentario))
+                                .addContainerGap())
+                            .addComponent(jScrollPane3)))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2))
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
 
         jTabbedPane1.addTab("Proyéctos", jPanel3);
@@ -324,7 +460,7 @@ public class AdminFrame extends javax.swing.JFrame {
                         .addGap(12, 12, 12))
                     .addGroup(jPanel6Layout.createSequentialGroup()
                         .addComponent(BtnGuardarAsignacion)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 87, Short.MAX_VALUE)
                         .addComponent(BtnCancelarAsignacion)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                     .addGroup(jPanel6Layout.createSequentialGroup()
@@ -494,7 +630,7 @@ public class AdminFrame extends javax.swing.JFrame {
                                 .addGap(18, 18, 18)
                                 .addComponent(BtnCancelarAsignacion1)))))
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 821, Short.MAX_VALUE)
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 896, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel7Layout.setVerticalGroup(
@@ -597,7 +733,7 @@ public class AdminFrame extends javax.swing.JFrame {
                             .addComponent(TxtFechaInicio1, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(jPanel4Layout.createSequentialGroup()
                                 .addComponent(BtnGuardar)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 84, Short.MAX_VALUE)
                                 .addComponent(BtnCancelar))))
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGap(49, 49, 49)
@@ -684,6 +820,189 @@ public class AdminFrame extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_BtnGuardarAsignacion1ActionPerformed
 
+    private void BtnLimpiarCamposProyectoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnLimpiarCamposProyectoActionPerformed
+        NombreProyecto.setText("");
+        CedulaLider.setText("");
+        ComentarioProyecto.setText("");
+        jTable3.clearSelection();
+        TableComentarios.clearSelection();
+
+        if (this.proyecto != null) {
+            this.proyecto.setId(0);
+        }
+        if (this.empleado != null) {
+            this.empleado.setId(0);
+        }
+        if (this.comentario != null) {
+            this.comentario.setId(0);
+        }
+
+
+    }//GEN-LAST:event_BtnLimpiarCamposProyectoActionPerformed
+
+    private void BtnGuardarProyectoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnGuardarProyectoActionPerformed
+
+        try (EntityManager em = PersistenceManager.getEntityManager()) {
+            if (!NombreProyecto.getText().equals("") && !CedulaLider.getText().equals("")) {
+
+                proyecto = new Proyectos();
+                empleado = new Empleados();
+
+                proyectoService = new ProyectoService();
+                empleadoService = new EmpleadoService();
+
+                empleado = empleadoService.readAllByCedula(em, Integer.parseInt(CedulaLider.getText()));
+
+                if (empleado != null) {
+                    proyecto.setNombreProyecto(NombreProyecto.getText());
+                    proyecto.setLiderProyecto(empleado);
+
+                    proyectoService.create(em, proyecto);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Error al obtener el empleado", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+
+            } else {
+                JOptionPane.showMessageDialog(null, "Rellene los campos", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            BtnLimpiarCamposProyectoActionPerformed(null);
+            rellenarTabla();
+        }
+    }//GEN-LAST:event_BtnGuardarProyectoActionPerformed
+
+    private void BtnCancelarProyectoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnCancelarProyectoActionPerformed
+
+        try (EntityManager em = PersistenceManager.getEntityManager()) {
+
+            proyectoService = new ProyectoService();
+
+            if (proyecto.getId() != null) {
+                proyectoService.delete(em, proyecto.getId());
+                JOptionPane.showMessageDialog(null, "Eliminado correctamente", "Error", JOptionPane.ERROR_MESSAGE);
+
+            } else {
+                JOptionPane.showMessageDialog(null, "Seleccione un proyecto", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            BtnLimpiarCamposProyectoActionPerformed(null);
+            rellenarTabla();
+            rellenarTablaComentarios();
+        }
+    }//GEN-LAST:event_BtnCancelarProyectoActionPerformed
+
+    private void BtnGuardarComentariosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnGuardarComentariosActionPerformed
+
+        try (EntityManager em = PersistenceManager.getEntityManager()) {
+            if (!ComentarioProyecto.getText().equals("")) {
+
+                comentario = new Comentario();
+
+                comentarioService = new ComentarioService();
+
+                if (proyecto != null && proyecto.getId() != null) {
+                    proyecto = proyectoService.read(em, proyecto.getId());
+
+                    if (proyecto != null) {
+                        comentario.setTexto(ComentarioProyecto.getText());
+                        comentario.setProyecto(proyecto);
+
+                        comentarioService.create(em, comentario);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Error al obtener el proyecto", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Seleccione un proyecto válido", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Rellene los campos", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            BtnLimpiarCamposProyectoActionPerformed(null);
+            rellenarTablaComentarios();
+        }
+    }//GEN-LAST:event_BtnGuardarComentariosActionPerformed
+
+    private void BtnCancelarComentarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnCancelarComentarioActionPerformed
+        try (EntityManager em = PersistenceManager.getEntityManager()) {
+
+            comentarioService = new ComentarioService();
+
+            if (comentario.getId() != null) {
+                comentarioService.delete(em, comentario.getId());
+                JOptionPane.showMessageDialog(null, "Eliminado correctamente", "Error", JOptionPane.ERROR_MESSAGE);
+
+            } else {
+                JOptionPane.showMessageDialog(null, "Seleccione un proyecto", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            BtnLimpiarCamposProyectoActionPerformed(null);
+            rellenarTabla();
+            rellenarTablaComentarios();
+        }
+    }//GEN-LAST:event_BtnCancelarComentarioActionPerformed
+
+    public void rellenarTabla() {
+
+        proyectoService = new ProyectoService();
+
+        try (EntityManager em = PersistenceManager.getEntityManager()) {
+            // Crear un modelo de tabla
+            DefaultTableModel model = new DefaultTableModel();
+
+            // Definir las columnas
+            String[] columnNames = {"ID", "Nombre", "Lider del proyecto", "Cedula del lider"};
+            model.setColumnIdentifiers(columnNames);
+
+            // Agregar los datos al modelo de la tabla
+            for (Proyectos proyecto : proyectoService.readAll(em)) {
+                // Obtener los atributos específicos de cada empleado
+                Object[] rowData = {proyecto.getId(), proyecto.getNombreProyecto(), proyecto.getLiderProyecto().getNombre(), proyecto.getLiderProyecto().getCedula()};
+                model.addRow(rowData);
+            }
+
+            // Asignar el modelo a la tabla
+            jTable3.setModel(model);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void rellenarTablaComentarios() {
+
+        comentarioService = new ComentarioService();
+
+        try (EntityManager em = PersistenceManager.getEntityManager()) {
+            // Crear un modelo de tabla
+            DefaultTableModel model1 = new DefaultTableModel();
+
+            // Definir las columnas
+            String[] columnNames = {"ID", "Comentario", "Proyecto"};
+            model1.setColumnIdentifiers(columnNames);
+
+            // Agregar los datos al modelo de la tabla
+            for (Comentario comentario : comentarioService.readAll(em)) {
+                Object[] rowData = {comentario.getId(), comentario.getTexto(), comentario.getProyecto().getNombreProyecto()};
+                model1.addRow(rowData);
+            }
+
+            // Asignar el modelo a la tabla
+            TableComentarios.setModel(model1);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -698,16 +1017,24 @@ public class AdminFrame extends javax.swing.JFrame {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
+
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(AdminFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AdminFrame.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(AdminFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AdminFrame.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(AdminFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AdminFrame.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(AdminFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AdminFrame.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
         //</editor-fold>
@@ -735,9 +1062,11 @@ public class AdminFrame extends javax.swing.JFrame {
     private javax.swing.JButton BtnLimpiarAsignacion;
     private javax.swing.JButton BtnLimpiarAsignacion1;
     private javax.swing.JButton BtnLimpiarCamposProyecto;
-    private javax.swing.JTextField TxtCedulaLider1;
+    private javax.swing.JTextField CedulaLider;
+    private javax.swing.JTextField ComentarioProyecto;
+    private javax.swing.JTextField NombreProyecto;
+    private javax.swing.JTable TableComentarios;
     private javax.swing.JTextField TxtCedulaVaciones;
-    private javax.swing.JTextField TxtComentarios;
     private javax.swing.JTextField TxtFechaFinA;
     private javax.swing.JTextField TxtFechaFinal;
     private javax.swing.JTextField TxtFechaInicio1;
@@ -745,9 +1074,9 @@ public class AdminFrame extends javax.swing.JFrame {
     private javax.swing.JTextField TxtIdEmpleado;
     private javax.swing.JTextField TxtIdEmpleado1;
     private javax.swing.JTextField TxtIdProyecto;
-    private javax.swing.JTextField TxtProyecto2;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JComboBox<String> jComboBox2;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
@@ -758,6 +1087,7 @@ public class AdminFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
@@ -772,6 +1102,7 @@ public class AdminFrame extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;

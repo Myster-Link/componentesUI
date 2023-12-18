@@ -70,12 +70,15 @@ public class EmpleadosFrame extends javax.swing.JFrame {
         TxtComentariosUsuario.setBackground(new java.awt.Color(204, 204, 204));
 
         BtnGuardarComentarioU.setBackground(new java.awt.Color(0, 0, 153));
+        BtnGuardarComentarioU.setForeground(new java.awt.Color(255, 255, 255));
         BtnGuardarComentarioU.setText("Guardar");
 
         BtnCancelarComentarioU.setBackground(new java.awt.Color(204, 0, 0));
+        BtnCancelarComentarioU.setForeground(new java.awt.Color(255, 255, 255));
         BtnCancelarComentarioU.setText("Cancelar");
 
         BtnLimpiarComentarioU.setBackground(new java.awt.Color(153, 153, 255));
+        BtnLimpiarComentarioU.setForeground(new java.awt.Color(255, 255, 255));
         BtnLimpiarComentarioU.setText("Limpiar");
 
         jLabel2.setForeground(new java.awt.Color(0, 0, 0));
