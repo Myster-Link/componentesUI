@@ -35,6 +35,8 @@ public class ProyectoPanel extends javax.swing.JPanel {
 
         em = PersistenceManager.getEntityManager();
 
+        rellenarTabla();
+
         jTable3.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -313,24 +315,26 @@ public class ProyectoPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     public void rellenarTabla() {
-
         try {
             // Para Proyectos
             ProyectoService proyectoService = new ProyectoService();
-            List<Proyectos> proyectos = proyectoService.readAll(em);
-            String[] columnasProyectos = {"ID", "Nombre", "Lider del proyecto", "Cedula del lider"};
-            TablaUtils.rellenarTabla(jTable3, proyectos, columnasProyectos);
-
-            // Para Comentarios
             ComentarioService comentarioService = new ComentarioService();
+
+            String[] columnsProyecto = {"ID", "NombreProyecto", "LiderProyecto", "LiderProyecto.cedula"};
+            List<Proyectos> proyectos = proyectoService.readAll(em);
+            String[] attProyect = {"Id", "NombreProyecto", "LiderProyecto", "LiderProyecto.Cedula"};
+            TablaUtils.rellenarTabla(jTable3, columnsProyecto, proyectos, attProyect);
+
+            String[] columnsComen = {"Id", "Texto", "Proyecto"};
             List<Comentario> comentarios = comentarioService.readAll(em);
-            String[] columnasComentarios = {"ID", "Comentario", "Proyecto"};
-            TablaUtils.rellenarTabla(TableComentarios, comentarios, columnasComentarios);
+            String[] attComen = {"Id", "Texto", "Proyecto.NombreProyecto"};
+            TablaUtils.rellenarTabla(TableComentarios, columnsComen, comentarios, attComen);
+
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-
     }
+
 
     private void BtnGuardarComentariosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnGuardarComentariosActionPerformed
 
