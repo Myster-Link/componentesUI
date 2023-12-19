@@ -4,17 +4,54 @@
  */
 package com.componentes.ui.panels;
 
+import com.componentes.controllers.PersistenceManager;
+import com.componentes.entitys.Asignaciones;
+import com.componentes.entitys.Empleados;
+import com.componentes.entitys.Proyectos;
+import com.componentes.services.AsignacionService;
+import com.componentes.services.EmpleadoService;
+import com.componentes.services.ProyectoService;
+import jakarta.persistence.EntityManager;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author chris
  */
 public class AsignacionPanel extends javax.swing.JPanel {
 
+    EntityManager em;
+
+    Proyectos proyecto;
+    Empleados empleado;
+    Asignaciones asignaciones;
+
+    ProyectoService proyectoService;
+    EmpleadoService empleadoService;
+    AsignacionService asignacionService;
+
     /**
      * Creates new form AsignacionPanel
      */
     public AsignacionPanel() {
         initComponents();
+
+        em = PersistenceManager.getEntityManager();
+
+        // Obtén la fecha actual
+        Date fechaActual = new Date();
+
+        // Crea un formato de fecha
+        SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy/MM/dd");
+
+        // Convierte la fecha actual a un String en el formato deseado
+        String fechaActualTexto = formatoFecha.format(fechaActual);
+
+        // Establece el texto en el JTextField
+        TxtFechaInicioA1.setText(fechaActualTexto);
+
     }
 
     /**
@@ -56,6 +93,11 @@ public class AsignacionPanel extends javax.swing.JPanel {
         jLabel16.setText("Fecha de fin");
 
         TxtFechaInicioA1.setBackground(new java.awt.Color(204, 204, 204));
+        TxtFechaInicioA1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TxtFechaInicioA1ActionPerformed(evt);
+            }
+        });
 
         jLabel17.setBackground(new java.awt.Color(255, 255, 255));
         jLabel17.setForeground(new java.awt.Color(0, 0, 0));
@@ -195,7 +237,55 @@ public class AsignacionPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void BtnGuardarAsignacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnGuardarAsignacionActionPerformed
-        // TODO add your handling code here:
+        try (EntityManager em = PersistenceManager.getEntityManager()) {
+            if (!TxtFechaFinA.getText().equals("")
+                    && !TxtIdEmpleado.getText().equals("") && !TxtIdEmpleado1.getText().equals("")
+                    && !TxtIdProyecto.getText().equals("")) {
+
+                asignaciones = new Asignaciones();
+
+                asignacionService = new AsignacionService();
+                ProyectoService proyectoService = new ProyectoService();
+                EmpleadoService empleadoService = new EmpleadoService();
+
+                // Capturar fechas
+                SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy/MM/dd");
+                java.util.Date fechaInicio = formatoFecha.parse(TxtFechaInicioA1.getText());
+                java.util.Date fechaFinal = formatoFecha.parse(TxtFechaFinA.getText());
+
+                // Convertir fechas a objetos java.sql.Date
+                java.sql.Date sqlFechaInicio = new java.sql.Date(fechaInicio.getTime());
+                java.sql.Date sqlFechaFinal = new java.sql.Date(fechaFinal.getTime());
+
+                asignaciones.setFechaInicio(sqlFechaInicio);
+                asignaciones.setFechaFin(sqlFechaFinal);
+
+                // Capturar ID del empleado
+                int idEmpleado = Integer.parseInt(TxtIdEmpleado1.getText());
+                empleado = empleadoService.read(em, idEmpleado); // Modificado para obtener el empleado correctamente
+                asignaciones.setEmpleado(empleado);
+
+                // Capturar ID del proyecto
+                int idProyecto = Integer.parseInt(TxtIdProyecto.getText());
+                proyecto = proyectoService.read(em, idProyecto); // Modificado para obtener el proyecto correctamente
+                asignaciones.setProyecto(proyecto);
+
+                // Capturar tarea y guardar en la base de datos
+                asignaciones.setTarea(TxtIdEmpleado.getText());
+
+                asignacionService.create(em, asignaciones);
+
+                JOptionPane.showMessageDialog(null, "Tarea asignada correctamente", "Mensaje", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Rellene los campos", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            BtnLimpiarAsignacionActionPerformed(null);
+            PersistenceManager.closeEntityManager(em);
+            // rellenarTabla();
+        }
     }//GEN-LAST:event_BtnGuardarAsignacionActionPerformed
 
     private void BtnLimpiarAsignacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnLimpiarAsignacionActionPerformed
@@ -205,6 +295,10 @@ public class AsignacionPanel extends javax.swing.JPanel {
     private void BtnCancelarAsignacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnCancelarAsignacionActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_BtnCancelarAsignacionActionPerformed
+
+    private void TxtFechaInicioA1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TxtFechaInicioA1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_TxtFechaInicioA1ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -4,17 +4,105 @@
  */
 package com.componentes.ui.panels;
 
+import com.componentes.controllers.PersistenceManager;
+import com.componentes.entitys.Empleados;
+import com.componentes.entitys.Proyectos;
+import com.componentes.entitys.Vacaciones;
+import com.componentes.services.EmpleadoService;
+import com.componentes.services.ProyectoService;
+import com.componentes.services.VacacionService;
+import com.componentes.utils.TablaUtils;
+import jakarta.persistence.EntityManager;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 /**
  *
  * @author chris
  */
 public class VacacionPanel extends javax.swing.JPanel {
 
+    EntityManager em;
+
+    Vacaciones vacaciones;
+    Empleados empleado;
+
+    VacacionService vacacionService;
+    EmpleadoService empleadoService;
+
     /**
      * Creates new form VacacionPanel
      */
     public VacacionPanel() {
         initComponents();
+
+        em = PersistenceManager.getEntityManager();
+
+        rellenarTabla();
+
+        // Obtén la fecha actual
+        Date fechaActual = new Date();
+
+        // Crea un formato de fecha
+        SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy/MM/dd");
+
+        // Convierte la fecha actual a un String en el formato deseado
+        String fechaActualTexto = formatoFecha.format(fechaActual);
+
+        // Establece el texto en el JTextField
+        TxtFechaInicioVacaciones.setText(fechaActualTexto);
+
+        jTable1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                // Verificar si la selección de fila cambió
+                if (!e.getValueIsAdjusting()) {
+                    int selectedRow = jTable1.getSelectedRow();
+                    if (selectedRow != -1) {
+                        // Obtener datos de la fila seleccionada y hacer lo que necesites
+                        Object id = jTable1.getValueAt(selectedRow, 0);
+                        Object cedula = jTable1.getValueAt(selectedRow, 1);
+                        Object Fecha_inicio_de_vacaciones = jTable1.getValueAt(selectedRow, 2);
+                        Object Fecha_fin_de_vacaciones = jTable1.getValueAt(selectedRow, 3);
+
+                        TxtCedulaVaciones.setText(cedula.toString());
+                        TxtFechaInicioVacaciones.setText(Fecha_inicio_de_vacaciones.toString());
+                        TxtFechaFinal.setText(Fecha_fin_de_vacaciones.toString());
+
+                        vacaciones = new Vacaciones();
+
+                        vacaciones.setId(Integer.parseInt(id.toString()));
+                    }
+                }
+            }
+        });
+
+    }
+
+    public void rellenarTabla() {
+        try (EntityManager em = PersistenceManager.getEntityManager()) {
+            // Para Proyectos
+            VacacionService vacacionService = new VacacionService();
+
+            String[] columnsVacaciones = {"id", "Cedula", "Fecha de inicio", "Fecha de fin"};
+            List<Vacaciones> vacaciones = vacacionService.readAll(em);
+            String[] attVacaciones = {"Id", "Cedula", "Fecha de inicio", "Fecha de fin"};
+            TablaUtils.rellenarTabla(jTable1, columnsVacaciones, vacaciones, attVacaciones);
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            PersistenceManager.closeEntityManager(em);
+        }
     }
 
     /**
@@ -32,12 +120,13 @@ public class VacacionPanel extends javax.swing.JPanel {
         jLabel11 = new javax.swing.JLabel();
         TxtFechaFinal = new javax.swing.JTextField();
         jLabel14 = new javax.swing.JLabel();
-        TxtFechaInicio1 = new javax.swing.JTextField();
+        TxtFechaInicioVacaciones = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         BtnGuardar = new javax.swing.JButton();
         BtnCancelar = new javax.swing.JButton();
-        BtnLimpiar = new javax.swing.JButton();
+        BtnLimpiar1 = new javax.swing.JButton();
+        BtnUpdateEmpleado = new javax.swing.JButton();
 
         jPanel4.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -50,11 +139,21 @@ public class VacacionPanel extends javax.swing.JPanel {
         jLabel11.setText("Fecha de inicio");
 
         TxtFechaFinal.setBackground(new java.awt.Color(204, 204, 204));
+        TxtFechaFinal.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TxtFechaFinalActionPerformed(evt);
+            }
+        });
 
         jLabel14.setForeground(new java.awt.Color(0, 0, 0));
         jLabel14.setText("Fecha de fin");
 
-        TxtFechaInicio1.setBackground(new java.awt.Color(204, 204, 204));
+        TxtFechaInicioVacaciones.setBackground(new java.awt.Color(204, 204, 204));
+        TxtFechaInicioVacaciones.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TxtFechaInicioVacacionesActionPerformed(evt);
+            }
+        });
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -72,39 +171,63 @@ public class VacacionPanel extends javax.swing.JPanel {
         BtnGuardar.setBackground(new java.awt.Color(0, 0, 204));
         BtnGuardar.setForeground(new java.awt.Color(255, 255, 255));
         BtnGuardar.setText("Guardar");
+        BtnGuardar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnGuardarActionPerformed(evt);
+            }
+        });
 
         BtnCancelar.setBackground(new java.awt.Color(255, 0, 0));
         BtnCancelar.setForeground(new java.awt.Color(255, 255, 255));
         BtnCancelar.setText("Cancelar");
+        BtnCancelar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnCancelarActionPerformed(evt);
+            }
+        });
 
-        BtnLimpiar.setBackground(new java.awt.Color(102, 102, 255));
-        BtnLimpiar.setForeground(new java.awt.Color(255, 255, 255));
-        BtnLimpiar.setText("Limpiar");
+        BtnLimpiar1.setBackground(new java.awt.Color(102, 102, 255));
+        BtnLimpiar1.setForeground(new java.awt.Color(255, 255, 255));
+        BtnLimpiar1.setText("Limpiar");
+        BtnLimpiar1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnLimpiar1ActionPerformed(evt);
+            }
+        });
+
+        BtnUpdateEmpleado.setBackground(new java.awt.Color(255, 204, 0));
+        BtnUpdateEmpleado.setForeground(new java.awt.Color(0, 0, 0));
+        BtnUpdateEmpleado.setText("Actualizar");
+        BtnUpdateEmpleado.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnUpdateEmpleadoActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(TxtCedulaVaciones, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(TxtFechaFinal, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(TxtFechaInicio1, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(jPanel4Layout.createSequentialGroup()
                                 .addComponent(BtnGuardar)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 84, Short.MAX_VALUE)
-                                .addComponent(BtnCancelar))))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGap(49, 49, 49)
-                        .addComponent(BtnLimpiar)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 870, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(BtnCancelar))
+                            .addComponent(TxtFechaFinal)
+                            .addComponent(TxtFechaInicioVacaciones)
+                            .addComponent(TxtCedulaVaciones))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(BtnUpdateEmpleado, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(BtnLimpiar1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 944, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
@@ -117,7 +240,7 @@ public class VacacionPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel11)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(TxtFechaInicio1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(TxtFechaInicioVacaciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel14)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -127,7 +250,9 @@ public class VacacionPanel extends javax.swing.JPanel {
                     .addComponent(BtnGuardar)
                     .addComponent(BtnCancelar))
                 .addGap(18, 18, 18)
-                .addComponent(BtnLimpiar)
+                .addComponent(BtnUpdateEmpleado)
+                .addGap(18, 18, 18)
+                .addComponent(BtnLimpiar1)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 609, Short.MAX_VALUE)
@@ -138,7 +263,7 @@ public class VacacionPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1128, Short.MAX_VALUE)
+            .addGap(0, 1130, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addGap(0, 0, Short.MAX_VALUE)
@@ -156,14 +281,97 @@ public class VacacionPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void BtnUpdateEmpleadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnUpdateEmpleadoActionPerformed
+
+    }//GEN-LAST:event_BtnUpdateEmpleadoActionPerformed
+
+    private void BtnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnGuardarActionPerformed
+        try (EntityManager em = PersistenceManager.getEntityManager()) {
+
+            vacaciones = new Vacaciones();
+            empleado = new Empleados();
+
+            vacacionService = new VacacionService();
+            empleadoService = new EmpleadoService();
+
+            // Obtén el número de cédula como String
+            String cedulaTexto = TxtCedulaVaciones.getText();
+
+            // Convierte el número de cédula a int
+            int numeroCedula = Integer.parseInt(cedulaTexto);
+
+            // Busca al empleado por su cédula
+            empleado = empleadoService.readAllByCedula(em, numeroCedula);
+
+            if (empleado != null) {
+                // Si se encontró al empleado, procede a guardar las fechas de vacaciones
+
+                // Obtén las fechas desde los JTextField
+                SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy/MM/dd");
+                Date fechaInicio = formatoFecha.parse(TxtFechaInicioVacaciones.getText());
+                Date fechaFinal = formatoFecha.parse(TxtFechaFinal.getText());
+
+                // Convierte las fechas a objetos java.sql.Date
+                java.sql.Date sqlFechaInicio = new java.sql.Date(fechaInicio.getTime());
+                java.sql.Date sqlFechaFinal = new java.sql.Date(fechaFinal.getTime());
+
+                vacaciones.setFechaInicio(sqlFechaInicio);
+                vacaciones.setFechaFin(sqlFechaFinal);
+                vacaciones.setEmpleado(empleado);
+
+                // Llamar al método create
+                vacacionService.create(em, vacaciones);
+                JOptionPane.showMessageDialog(null, "Vacaciones agregadas correctamente", "Mensaje", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                // Si no se encuentra al empleado, muestra un mensaje de error
+                JOptionPane.showMessageDialog(null, "No se encontró un empleado con la cédula proporcionada.",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (NumberFormatException | ParseException ex) {
+            // Maneja la excepción si hay un error al convertir el número de cédula
+            // o si el formato de fecha es incorrecto
+            JOptionPane.showMessageDialog(null, "Error en el formato de cédula o fecha. "
+                    + "Asegúrate de ingresar un número de cédula válido y usar el formato yyyy/MM/dd",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException ex) {
+            Logger.getLogger(VacacionPanel.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            //BtnLimpiarCamposProyectoActionPerformed(null);
+            PersistenceManager.closeEntityManager(em);
+            //rellenarTabla();
+        }
+    }//GEN-LAST:event_BtnGuardarActionPerformed
+
+    private void BtnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnCancelarActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_BtnCancelarActionPerformed
+
+    private void BtnLimpiar1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnLimpiar1ActionPerformed
+        TxtCedulaVaciones.setText("");
+        TxtFechaInicioVacaciones.setText("");
+        TxtFechaFinal.setText("");
+        jTable1.clearSelection();
+
+        if (this.vacaciones != null) {
+            this.vacaciones.setId(0);
+        }    }//GEN-LAST:event_BtnLimpiar1ActionPerformed
+
+    private void TxtFechaInicioVacacionesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TxtFechaInicioVacacionesActionPerformed
+     }//GEN-LAST:event_TxtFechaInicioVacacionesActionPerformed
+
+    private void TxtFechaFinalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TxtFechaFinalActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_TxtFechaFinalActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BtnCancelar;
     private javax.swing.JButton BtnGuardar;
-    private javax.swing.JButton BtnLimpiar;
+    private javax.swing.JButton BtnLimpiar1;
+    private javax.swing.JButton BtnUpdateEmpleado;
     private javax.swing.JTextField TxtCedulaVaciones;
     private javax.swing.JTextField TxtFechaFinal;
-    private javax.swing.JTextField TxtFechaInicio1;
+    private javax.swing.JTextField TxtFechaInicioVacaciones;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel14;
