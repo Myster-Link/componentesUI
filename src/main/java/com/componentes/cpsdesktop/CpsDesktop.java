@@ -1,6 +1,6 @@
 package com.componentes.cpsdesktop;
 
-import com.componentes.ui.LoginFrame;
+import com.componentes.ui.frames.LoginFrame;
 
 public class CpsDesktop {
 
