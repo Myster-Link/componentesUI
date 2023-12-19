@@ -1,5 +1,6 @@
 com\componentes\ui\frames\LoginFrame$2.class
 com\componentes\ui\frames\LoginFrame.class
+com\componentes\ui\panels\EmpleadoPalen$5.class
 com\componentes\ui\panels\AsignacionPanel$1.class
 com\componentes\ui\panels\EmpleadoPalen.class
 com\componentes\ui\panels\AsignacionPanel$3.class
@@ -19,6 +20,7 @@ com\componentes\ui\frames\AdminFrame.class
 com\componentes\ui\panels\ProyectoPanel$7.class
 com\componentes\ui\frames\EmpleadosFrame$1.class
 com\componentes\ui\frames\LoginFrame$3.class
+com\componentes\ui\panels\EmpleadoPalen$6.class
 com\componentes\utils\TablaUtils.class
 com\componentes\ui\panels\ProyectoPanel.class
 com\componentes\ui\panels\EmpleadoPalen$3.class

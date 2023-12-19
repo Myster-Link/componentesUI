@@ -1,3 +1,4 @@
+
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
@@ -315,7 +316,7 @@ public class ProyectoPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     public void rellenarTabla() {
-        try {
+        try (EntityManager em = PersistenceManager.getEntityManager()) {
             // Para Proyectos
             ProyectoService proyectoService = new ProyectoService();
             ComentarioService comentarioService = new ComentarioService();
@@ -332,6 +333,8 @@ public class ProyectoPanel extends javax.swing.JPanel {
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            PersistenceManager.closeEntityManager(em);
         }
     }
 
@@ -366,6 +369,7 @@ public class ProyectoPanel extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         } finally {
             BtnLimpiarCamposProyectoActionPerformed(null);
+            PersistenceManager.closeEntityManager(em);
             rellenarTabla();
         }
     }//GEN-LAST:event_BtnGuardarComentariosActionPerformed
@@ -407,6 +411,7 @@ public class ProyectoPanel extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         } finally {
             BtnLimpiarCamposProyectoActionPerformed(null);
+            PersistenceManager.closeEntityManager(em);
             rellenarTabla();
         }
     }//GEN-LAST:event_BtnCancelarProyectoActionPerformed
@@ -440,6 +445,7 @@ public class ProyectoPanel extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         } finally {
             BtnLimpiarCamposProyectoActionPerformed(null);
+            PersistenceManager.closeEntityManager(em);
             rellenarTabla();
         }
     }//GEN-LAST:event_BtnGuardarProyectoActionPerformed
@@ -461,6 +467,7 @@ public class ProyectoPanel extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         } finally {
             BtnLimpiarCamposProyectoActionPerformed(null);
+            PersistenceManager.closeEntityManager(em);
             rellenarTabla();
         }
     }//GEN-LAST:event_BtnCancelarComentarioActionPerformed

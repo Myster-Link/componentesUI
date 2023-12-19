@@ -4,17 +4,85 @@
  */
 package com.componentes.ui.panels;
 
+import com.componentes.controllers.PersistenceManager;
+import com.componentes.entitys.Empleados;
+import com.componentes.entitys.Proyectos;
+import com.componentes.enums.Puesto;
+import com.componentes.services.EmpleadoService;
+import com.componentes.services.ProyectoService;
+import com.componentes.utils.TablaUtils;
+import jakarta.persistence.EntityManager;
+import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 /**
  *
  * @author chris
  */
 public class EmpleadoPalen extends javax.swing.JPanel {
 
-    /**
-     * Creates new form EmpleadoPalen
-     */
+    EntityManager em;
+
+    Empleados empleado;
+
+    EmpleadoService empleadoService;
+
     public EmpleadoPalen() {
         initComponents();
+
+        em = PersistenceManager.getEntityManager();
+
+        rellenarTabla();
+
+        jTable5.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                // Verificar si la selección de fila cambió
+                if (!e.getValueIsAdjusting()) {
+                    int selectedRow = jTable5.getSelectedRow();
+                    if (selectedRow != -1) {
+                        // Obtener datos de la fila seleccionada y hacer lo que necesites
+                        Object id = jTable5.getValueAt(selectedRow, 0);
+                        Object cedula = jTable5.getValueAt(selectedRow, 1);
+                        Object nombre = jTable5.getValueAt(selectedRow, 2);
+                        Object sexo = jTable5.getValueAt(selectedRow, 3);
+                        Object puesto = jTable5.getValueAt(selectedRow, 4);
+                        Object direccion = jTable5.getValueAt(selectedRow, 5);
+                        Object experiencia = jTable5.getValueAt(selectedRow, 6);
+
+                        TxtCedulaEm.setText(cedula.toString());
+                        TxtNombreEm.setText(nombre.toString());
+                        jComboBoxSexo.setSelectedItem(sexo.toString());
+                        jComboPuesto.setSelectedItem(puesto.toString());
+                        jTextAreaDireccionE.setText(direccion.toString());
+                        jTextAreaExperienciaE.setText(experiencia.toString());
+
+                        empleado = new Empleados();
+
+                        empleado.setId(Integer.parseInt(id.toString()));
+                    }
+                }
+            }
+        });
+    }
+
+    public void rellenarTabla() {
+        try (EntityManager em = PersistenceManager.getEntityManager()) {
+            // Para Proyectos
+            EmpleadoService empleadoService = new EmpleadoService();
+
+            String[] columnsEmpleado = {"id", "Cedula", "Nombre", "Sexo", "Puesto", "Direccion", "Experiencia"};
+            List<Empleados> empleados = empleadoService.readAll(em);
+            String[] attEmpleado = {"Id", "Cedula", "Nombre", "Sexo", "Puesto", "Direccion", "Experiencia"};
+            TablaUtils.rellenarTabla(jTable5, columnsEmpleado, empleados, attEmpleado);
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            PersistenceManager.closeEntityManager(em);
+        }
     }
 
     /**
@@ -28,24 +96,24 @@ public class EmpleadoPalen extends javax.swing.JPanel {
 
         jPanel7 = new javax.swing.JPanel();
         jLabel20 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        TxtCedulaEm = new javax.swing.JTextField();
         jLabel21 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
+        TxtNombreEm = new javax.swing.JTextField();
         jLabel22 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        jComboBoxSexo = new javax.swing.JComboBox<>();
         jLabel23 = new javax.swing.JLabel();
-        jComboBox2 = new javax.swing.JComboBox<>();
+        jComboPuesto = new javax.swing.JComboBox<>();
         jLabel24 = new javax.swing.JLabel();
         jScrollPane5 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        jTextAreaExperienciaE = new javax.swing.JTextArea();
         BtnGuardarAsignacion1 = new javax.swing.JButton();
         BtnCancelarAsignacion1 = new javax.swing.JButton();
-        BtnLimpiarAsignacion1 = new javax.swing.JButton();
+        BtnUpdateEmpleado = new javax.swing.JButton();
         jScrollPane6 = new javax.swing.JScrollPane();
         jTable5 = new javax.swing.JTable();
         jLabel25 = new javax.swing.JLabel();
         jScrollPane7 = new javax.swing.JScrollPane();
-        jTextArea2 = new javax.swing.JTextArea();
+        jTextAreaDireccionE = new javax.swing.JTextArea();
         BtnLimpiarAsignacion2 = new javax.swing.JButton();
 
         jPanel7.setBackground(new java.awt.Color(255, 255, 255));
@@ -53,31 +121,36 @@ public class EmpleadoPalen extends javax.swing.JPanel {
         jLabel20.setForeground(new java.awt.Color(0, 0, 0));
         jLabel20.setText("Cedula");
 
-        jTextField1.setBackground(new java.awt.Color(204, 204, 204));
-        jTextField1.setForeground(new java.awt.Color(0, 0, 0));
+        TxtCedulaEm.setBackground(new java.awt.Color(204, 204, 204));
+        TxtCedulaEm.setForeground(new java.awt.Color(0, 0, 0));
+        TxtCedulaEm.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TxtCedulaEmActionPerformed(evt);
+            }
+        });
 
         jLabel21.setForeground(new java.awt.Color(0, 0, 0));
         jLabel21.setText("Nombre");
 
-        jTextField2.setBackground(new java.awt.Color(204, 204, 204));
-        jTextField2.setForeground(new java.awt.Color(0, 0, 0));
+        TxtNombreEm.setBackground(new java.awt.Color(204, 204, 204));
+        TxtNombreEm.setForeground(new java.awt.Color(0, 0, 0));
 
         jLabel22.setForeground(new java.awt.Color(0, 0, 0));
         jLabel22.setText("Sexo");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Masculino", "Femenino" }));
+        jComboBoxSexo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Masculino", "Femenino" }));
 
         jLabel23.setForeground(new java.awt.Color(0, 0, 0));
         jLabel23.setText("Direccion");
 
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Gerente", "Analista", "Desarrollador", "Tester" }));
+        jComboPuesto.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Gerente", "Analista", "Desarrollador", "Tester" }));
 
         jLabel24.setForeground(new java.awt.Color(0, 0, 0));
         jLabel24.setText("Puesto");
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane5.setViewportView(jTextArea1);
+        jTextAreaExperienciaE.setColumns(20);
+        jTextAreaExperienciaE.setRows(5);
+        jScrollPane5.setViewportView(jTextAreaExperienciaE);
 
         BtnGuardarAsignacion1.setBackground(new java.awt.Color(0, 0, 153));
         BtnGuardarAsignacion1.setForeground(new java.awt.Color(255, 255, 255));
@@ -97,12 +170,12 @@ public class EmpleadoPalen extends javax.swing.JPanel {
             }
         });
 
-        BtnLimpiarAsignacion1.setBackground(new java.awt.Color(255, 204, 0));
-        BtnLimpiarAsignacion1.setForeground(new java.awt.Color(0, 0, 0));
-        BtnLimpiarAsignacion1.setText("Actualizar");
-        BtnLimpiarAsignacion1.addActionListener(new java.awt.event.ActionListener() {
+        BtnUpdateEmpleado.setBackground(new java.awt.Color(255, 204, 0));
+        BtnUpdateEmpleado.setForeground(new java.awt.Color(0, 0, 0));
+        BtnUpdateEmpleado.setText("Actualizar");
+        BtnUpdateEmpleado.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                BtnLimpiarAsignacion1ActionPerformed(evt);
+                BtnUpdateEmpleadoActionPerformed(evt);
             }
         });
 
@@ -122,9 +195,9 @@ public class EmpleadoPalen extends javax.swing.JPanel {
         jLabel25.setForeground(new java.awt.Color(0, 0, 0));
         jLabel25.setText("Experiencia");
 
-        jTextArea2.setColumns(20);
-        jTextArea2.setRows(5);
-        jScrollPane7.setViewportView(jTextArea2);
+        jTextAreaDireccionE.setColumns(20);
+        jTextAreaDireccionE.setRows(5);
+        jScrollPane7.setViewportView(jTextAreaDireccionE);
 
         BtnLimpiarAsignacion2.setBackground(new java.awt.Color(102, 102, 255));
         BtnLimpiarAsignacion2.setForeground(new java.awt.Color(255, 255, 255));
@@ -146,13 +219,13 @@ public class EmpleadoPalen extends javax.swing.JPanel {
                         .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                 .addComponent(jLabel20)
-                                .addComponent(jTextField1)
+                                .addComponent(TxtCedulaEm)
                                 .addComponent(jLabel21)
-                                .addComponent(jTextField2, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
+                                .addComponent(TxtNombreEm, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
                                 .addComponent(jLabel22)
-                                .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jComboBoxSexo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jLabel23)
-                                .addComponent(jComboBox2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jComboPuesto, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                                 .addComponent(jScrollPane7, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                             .addComponent(jLabel24)))
@@ -166,7 +239,7 @@ public class EmpleadoPalen extends javax.swing.JPanel {
                                 .addComponent(BtnGuardarAsignacion1)
                                 .addGap(18, 18, 18)
                                 .addComponent(BtnCancelarAsignacion1))
-                            .addComponent(BtnLimpiarAsignacion1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(BtnUpdateEmpleado, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(BtnLimpiarAsignacion2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 896, Short.MAX_VALUE)
@@ -181,19 +254,19 @@ public class EmpleadoPalen extends javax.swing.JPanel {
                     .addGroup(jPanel7Layout.createSequentialGroup()
                         .addComponent(jLabel20)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(TxtCedulaEm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel21)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(TxtNombreEm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel22)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jComboBoxSexo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jLabel24)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jComboPuesto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel23)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -207,7 +280,7 @@ public class EmpleadoPalen extends javax.swing.JPanel {
                             .addComponent(BtnGuardarAsignacion1)
                             .addComponent(BtnCancelarAsignacion1))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(BtnLimpiarAsignacion1)
+                        .addComponent(BtnUpdateEmpleado)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(BtnLimpiarAsignacion2)
                         .addContainerGap())))
@@ -236,29 +309,129 @@ public class EmpleadoPalen extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void BtnGuardarAsignacion1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnGuardarAsignacion1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_BtnGuardarAsignacion1ActionPerformed
+        try (EntityManager em = PersistenceManager.getEntityManager()) {
+            if (!TxtCedulaEm.getText().equals("") && !TxtNombreEm.getText().equals("")
+                    && !jComboBoxSexo.getSelectedItem().equals("") && !jComboPuesto.getSelectedItem().equals("")
+                    && !jTextAreaDireccionE.getText().equals("") && !jTextAreaExperienciaE.getText().equals("")) {
+
+                empleado = new Empleados();
+
+                empleadoService = new EmpleadoService();
+
+                if (empleado != null) {
+
+                    empleado.setCedula(Integer.parseInt(TxtCedulaEm.getText()));
+                    empleado.setNombre(TxtNombreEm.getText());
+                    empleado.setSexo(jComboBoxSexo.getSelectedItem().toString());
+                    empleado.setPuesto(Puesto.valueOf(jComboPuesto.getSelectedItem().toString().toUpperCase()));
+                    empleado.setDireccion(jTextAreaDireccionE.getText());
+                    empleado.setExperiencia(jTextAreaExperienciaE.getText());
+
+                    empleadoService.create(em, empleado);
+
+                    JOptionPane.showMessageDialog(null, "Empleado agregado correctamente", "Mensaje", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Error al obtener el empleado", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+
+            } else {
+                JOptionPane.showMessageDialog(null, "Rellene los campos", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            BtnLimpiarAsignacion2ActionPerformed(null);
+            PersistenceManager.closeEntityManager(em);
+            rellenarTabla();
+        }
+     }//GEN-LAST:event_BtnGuardarAsignacion1ActionPerformed
 
     private void BtnCancelarAsignacion1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnCancelarAsignacion1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_BtnCancelarAsignacion1ActionPerformed
+        try (EntityManager em = PersistenceManager.getEntityManager()) {
 
-    private void BtnLimpiarAsignacion1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnLimpiarAsignacion1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_BtnLimpiarAsignacion1ActionPerformed
+            empleadoService = new EmpleadoService();
+
+            if (empleado.getId() != null) {
+                empleadoService.delete(em, empleado.getId());
+                JOptionPane.showMessageDialog(null, "Eliminado correctamente", "Error", JOptionPane.ERROR_MESSAGE);
+
+            } else {
+                JOptionPane.showMessageDialog(null, "Seleccione un empleado", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            BtnLimpiarAsignacion2ActionPerformed(null);
+            PersistenceManager.closeEntityManager(em);
+            rellenarTabla();
+        }    }//GEN-LAST:event_BtnCancelarAsignacion1ActionPerformed
+
+    private void BtnUpdateEmpleadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnUpdateEmpleadoActionPerformed
+        try (EntityManager em = PersistenceManager.getEntityManager()) {
+            if (!TxtCedulaEm.getText().equals("") && !TxtNombreEm.getText().equals("")
+                    && !jComboBoxSexo.getSelectedItem().equals("") && !jComboPuesto.getSelectedItem().equals("")
+                    && !jTextAreaDireccionE.getText().equals("") && !jTextAreaExperienciaE.getText().equals("")) {
+
+                empleadoService = new EmpleadoService();
+                empleado = empleadoService.read(em, empleado.getId());
+
+                if (empleado != null) {
+
+                    empleado.setCedula(Integer.parseInt(TxtCedulaEm.getText()));
+                    empleado.setNombre(TxtNombreEm.getText());
+                    empleado.setSexo(jComboBoxSexo.getSelectedItem().toString());
+                    empleado.setPuesto(Puesto.valueOf(jComboPuesto.getSelectedItem().toString().toUpperCase()));
+                    empleado.setDireccion(jTextAreaDireccionE.getText());
+                    empleado.setExperiencia(jTextAreaExperienciaE.getText());
+
+                    empleadoService.update(em, empleado);
+
+                    JOptionPane.showMessageDialog(null, "Empleado actualizado correctamente", "Mensaje", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Error al obtener el empleado", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+
+            } else {
+                JOptionPane.showMessageDialog(null, "Rellene los campos", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            BtnLimpiarAsignacion2ActionPerformed(null);
+            PersistenceManager.closeEntityManager(em);
+            rellenarTabla();
+        }
+    }//GEN-LAST:event_BtnUpdateEmpleadoActionPerformed
 
     private void BtnLimpiarAsignacion2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnLimpiarAsignacion2ActionPerformed
+        TxtCedulaEm.setText("");
+        TxtNombreEm.setText("");
+        jComboBoxSexo.setSelectedItem("");
+        jComboPuesto.setSelectedItem("");
+        jTextAreaDireccionE.setText("");
+        jTextAreaExperienciaE.setText("");
+        jTable5.clearSelection();
+
+        if (this.empleado != null) {
+            this.empleado.setId(0);
+        }
+     }//GEN-LAST:event_BtnLimpiarAsignacion2ActionPerformed
+
+    private void TxtCedulaEmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TxtCedulaEmActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_BtnLimpiarAsignacion2ActionPerformed
+    }//GEN-LAST:event_TxtCedulaEmActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BtnCancelarAsignacion1;
     private javax.swing.JButton BtnGuardarAsignacion1;
-    private javax.swing.JButton BtnLimpiarAsignacion1;
     private javax.swing.JButton BtnLimpiarAsignacion2;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JComboBox<String> jComboBox2;
+    private javax.swing.JButton BtnUpdateEmpleado;
+    private javax.swing.JTextField TxtCedulaEm;
+    private javax.swing.JTextField TxtNombreEm;
+    private javax.swing.JComboBox<String> jComboBoxSexo;
+    private javax.swing.JComboBox<String> jComboPuesto;
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
@@ -270,9 +443,7 @@ public class EmpleadoPalen extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JTable jTable5;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextArea jTextArea2;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
+    private javax.swing.JTextArea jTextAreaDireccionE;
+    private javax.swing.JTextArea jTextAreaExperienciaE;
     // End of variables declaration//GEN-END:variables
 }
