@@ -321,9 +321,9 @@ public class ProyectoPanel extends javax.swing.JPanel {
             ProyectoService proyectoService = new ProyectoService();
             ComentarioService comentarioService = new ComentarioService();
 
-            String[] columnsProyecto = {"ID", "NombreProyecto", "LiderProyecto", "LiderProyecto.cedula"};
+            String[] columnsProyecto = {"ID", "NombreProyecto", "Lider Proyecto", "Cedula del lider"};
             List<Proyectos> proyectos = proyectoService.readAll(em);
-            String[] attProyect = {"Id", "NombreProyecto", "LiderProyecto", "LiderProyecto.Cedula"};
+            String[] attProyect = {"Id", "NombreProyecto", "LiderProyecto.Nombre", "LiderProyecto.Cedula"};
             TablaUtils.rellenarTabla(jTable3, columnsProyecto, proyectos, attProyect);
 
             String[] columnsComen = {"Id", "Texto", "Proyecto"};
@@ -349,6 +349,7 @@ public class ProyectoPanel extends javax.swing.JPanel {
                 comentarioService = new ComentarioService();
 
                 if (proyecto != null && proyecto.getId() != null) {
+                    proyectoService = new ProyectoService();
                     proyecto = proyectoService.read(em, proyecto.getId());
 
                     if (proyecto != null) {

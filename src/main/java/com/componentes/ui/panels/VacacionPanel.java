@@ -8,6 +8,7 @@ import com.componentes.controllers.PersistenceManager;
 import com.componentes.entitys.Empleados;
 import com.componentes.entitys.Proyectos;
 import com.componentes.entitys.Vacaciones;
+import com.componentes.enums.Puesto;
 import com.componentes.services.EmpleadoService;
 import com.componentes.services.ProyectoService;
 import com.componentes.services.VacacionService;
@@ -71,16 +72,17 @@ public class VacacionPanel extends javax.swing.JPanel {
                         // Obtener datos de la fila seleccionada y hacer lo que necesites
                         Object id = jTable1.getValueAt(selectedRow, 0);
                         Object cedula = jTable1.getValueAt(selectedRow, 1);
-                        Object Fecha_inicio_de_vacaciones = jTable1.getValueAt(selectedRow, 2);
-                        Object Fecha_fin_de_vacaciones = jTable1.getValueAt(selectedRow, 3);
+                        Object Fecha_inicio = jTable1.getValueAt(selectedRow, 2);
+                        Object Fecha_fin = jTable1.getValueAt(selectedRow, 3);
 
                         TxtCedulaVaciones.setText(cedula.toString());
-                        TxtFechaInicioVacaciones.setText(Fecha_inicio_de_vacaciones.toString());
-                        TxtFechaFinal.setText(Fecha_fin_de_vacaciones.toString());
+                        TxtFechaInicioVacaciones.setText(Fecha_inicio.toString());
+                        TxtFechaFinal.setText(Fecha_fin.toString());
 
                         vacaciones = new Vacaciones();
 
                         vacaciones.setId(Integer.parseInt(id.toString()));
+                        empleado.setCedula(Integer.parseInt(cedula.toString()));
                     }
                 }
             }
@@ -90,12 +92,12 @@ public class VacacionPanel extends javax.swing.JPanel {
 
     public void rellenarTabla() {
         try (EntityManager em = PersistenceManager.getEntityManager()) {
-            // Para Proyectos
+            // Para vaciones
             VacacionService vacacionService = new VacacionService();
 
             String[] columnsVacaciones = {"id", "Cedula", "Fecha de inicio", "Fecha de fin"};
             List<Vacaciones> vacaciones = vacacionService.readAll(em);
-            String[] attVacaciones = {"Id", "Cedula", "Fecha de inicio", "Fecha de fin"};
+            String[] attVacaciones = {"Id", "Empleado.Cedula", "FechaInicio", "FechaFin"};
             TablaUtils.rellenarTabla(jTable1, columnsVacaciones, vacaciones, attVacaciones);
 
         } catch (Exception e) {
@@ -179,7 +181,7 @@ public class VacacionPanel extends javax.swing.JPanel {
 
         BtnCancelar.setBackground(new java.awt.Color(255, 0, 0));
         BtnCancelar.setForeground(new java.awt.Color(255, 255, 255));
-        BtnCancelar.setText("Cancelar");
+        BtnCancelar.setText("Eliminar");
         BtnCancelar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BtnCancelarActionPerformed(evt);
@@ -282,6 +284,33 @@ public class VacacionPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void BtnUpdateEmpleadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnUpdateEmpleadoActionPerformed
+        try (EntityManager em = PersistenceManager.getEntityManager()) {
+
+            vacacionService = new VacacionService();
+            empleado = empleadoService.read(em, empleado.getId());
+
+            if (empleado != null) {
+
+                SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy/MM/dd");
+                Date fechaFinal = formatoFecha.parse(TxtFechaFinal.getText());
+                java.sql.Date sqlFechaFinal = new java.sql.Date(fechaFinal.getTime());
+
+                vacaciones.setEmpleado(empleado);
+                vacaciones.setFechaFin(sqlFechaFinal);
+
+                vacacionService.update(em, vacaciones);
+
+                JOptionPane.showMessageDialog(null, " Actualizado correctamente", "Mensaje", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Error al obtener", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            BtnLimpiar1ActionPerformed(null);
+            PersistenceManager.closeEntityManager(em);
+            rellenarTabla();
+        }
 
     }//GEN-LAST:event_BtnUpdateEmpleadoActionPerformed
 
@@ -327,23 +356,39 @@ public class VacacionPanel extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(null, "No se encontró un empleado con la cédula proporcionada.",
                         "Error", JOptionPane.ERROR_MESSAGE);
             }
-        } catch (NumberFormatException | ParseException ex) {
+        } catch (Exception ex) {
             // Maneja la excepción si hay un error al convertir el número de cédula
             // o si el formato de fecha es incorrecto
             JOptionPane.showMessageDialog(null, "Error en el formato de cédula o fecha. "
                     + "Asegúrate de ingresar un número de cédula válido y usar el formato yyyy/MM/dd",
                     "Error", JOptionPane.ERROR_MESSAGE);
-        } catch (SQLException ex) {
-            Logger.getLogger(VacacionPanel.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
-            //BtnLimpiarCamposProyectoActionPerformed(null);
+            BtnLimpiar1ActionPerformed(null);
             PersistenceManager.closeEntityManager(em);
-            //rellenarTabla();
+            rellenarTabla();
         }
     }//GEN-LAST:event_BtnGuardarActionPerformed
 
     private void BtnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnCancelarActionPerformed
-        // TODO add your handling code here:
+        try (EntityManager em = PersistenceManager.getEntityManager()) {
+
+            vacacionService = new VacacionService();
+
+            if (vacaciones.getId() != null) {
+                vacacionService.delete(em, vacaciones.getId());
+                JOptionPane.showMessageDialog(null, "Eliminado correctamente", "Error", JOptionPane.ERROR_MESSAGE);
+
+            } else {
+                JOptionPane.showMessageDialog(null, "Seleccione un elemento", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            BtnLimpiar1ActionPerformed(null);
+            PersistenceManager.closeEntityManager(em);
+            rellenarTabla();
+        }
     }//GEN-LAST:event_BtnCancelarActionPerformed
 
     private void BtnLimpiar1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnLimpiar1ActionPerformed

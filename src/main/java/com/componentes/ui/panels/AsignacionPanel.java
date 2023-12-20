@@ -8,13 +8,19 @@ import com.componentes.controllers.PersistenceManager;
 import com.componentes.entitys.Asignaciones;
 import com.componentes.entitys.Empleados;
 import com.componentes.entitys.Proyectos;
+import com.componentes.entitys.Vacaciones;
 import com.componentes.services.AsignacionService;
 import com.componentes.services.EmpleadoService;
 import com.componentes.services.ProyectoService;
+import com.componentes.services.VacacionService;
+import com.componentes.utils.TablaUtils;
 import jakarta.persistence.EntityManager;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import javax.swing.JOptionPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /**
  *
@@ -51,7 +57,52 @@ public class AsignacionPanel extends javax.swing.JPanel {
 
         // Establece el texto en el JTextField
         TxtFechaInicioA1.setText(fechaActualTexto);
+        rellenarTabla();
 
+        jTable4.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                // Verificar si la selección de fila cambió
+                if (!e.getValueIsAdjusting()) {
+                    int selectedRow = jTable4.getSelectedRow();
+                    if (selectedRow != -1) {
+                        // Obtener datos de la fila seleccionada y hacer lo que necesites
+                        Object id = jTable4.getValueAt(selectedRow, 0);
+                        Object Fecha_inicio = jTable4.getValueAt(selectedRow, 1);
+                        Object Fecha_fin = jTable4.getValueAt(selectedRow, 2);
+                        Object proyecto = jTable4.getValueAt(selectedRow, 3);
+                        Object empleado = jTable4.getValueAt(selectedRow, 4);
+                        Object tarea = jTable4.getValueAt(selectedRow, 5);
+
+                        TxtFechaInicioA1.setText(Fecha_inicio.toString());
+                        TxtFechaFinA.setText(Fecha_fin.toString());
+                        TxtIdProyecto.setText(proyecto.toString());
+                        TxtIdEmpleado1.setText(empleado.toString());
+                        tareaTxt.setText(tarea.toString());
+
+                        asignaciones.setId(Integer.parseInt(id.toString()));
+                    }
+                }
+            }
+        });
+
+    }
+
+    public void rellenarTabla() {
+        try (EntityManager em = PersistenceManager.getEntityManager()) {
+            // Para asignaciones
+            AsignacionService asignacionService = new AsignacionService();
+
+            String[] columnsAsignaciones = {"id", "Fecha de inicio", "Fecha de fin", "id proyecto", "id empleado", "Tarea asignada"};
+            List<Asignaciones> asignaciones = asignacionService.readAll(em);
+            String[] attAsignaciones = {"Id", "FechaInicio", "FechaFin", "Proyecto.Id", "Empleado.Id", "Tarea"};
+            TablaUtils.rellenarTabla(jTable4, columnsAsignaciones, asignaciones, attAsignaciones);
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "asignacion: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            PersistenceManager.closeEntityManager(em);
+        }
     }
 
     /**
@@ -71,7 +122,7 @@ public class AsignacionPanel extends javax.swing.JPanel {
         jLabel17 = new javax.swing.JLabel();
         TxtIdProyecto = new javax.swing.JTextField();
         jLabel18 = new javax.swing.JLabel();
-        TxtIdEmpleado = new javax.swing.JTextField();
+        tareaTxt = new javax.swing.JTextField();
         jLabel19 = new javax.swing.JLabel();
         TxtIdEmpleado1 = new javax.swing.JTextField();
         jScrollPane4 = new javax.swing.JScrollPane();
@@ -109,7 +160,7 @@ public class AsignacionPanel extends javax.swing.JPanel {
         jLabel18.setForeground(new java.awt.Color(0, 0, 0));
         jLabel18.setText("Id del empleado");
 
-        TxtIdEmpleado.setBackground(new java.awt.Color(204, 204, 204));
+        tareaTxt.setBackground(new java.awt.Color(204, 204, 204));
 
         jLabel19.setBackground(new java.awt.Color(255, 255, 255));
         jLabel19.setForeground(new java.awt.Color(0, 0, 0));
@@ -166,27 +217,28 @@ public class AsignacionPanel extends javax.swing.JPanel {
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel6Layout.createSequentialGroup()
                         .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel18, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel15, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(TxtFechaInicioA1, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel19, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(TxtFechaFinA, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE)
-                                .addComponent(TxtIdProyecto, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(TxtIdEmpleado1, javax.swing.GroupLayout.Alignment.LEADING))
-                            .addComponent(TxtIdEmpleado))
+                            .addComponent(TxtFechaFinA)
+                            .addComponent(TxtIdProyecto)
+                            .addComponent(tareaTxt)
+                            .addComponent(TxtIdEmpleado1)
+                            .addComponent(TxtFechaInicioA1)
+                            .addGroup(jPanel6Layout.createSequentialGroup()
+                                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel18, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel15, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel19, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(0, 0, Short.MAX_VALUE)))
                         .addGap(12, 12, 12))
                     .addGroup(jPanel6Layout.createSequentialGroup()
-                        .addComponent(BtnGuardarAsignacion)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(BtnCancelarAsignacion)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
-                    .addGroup(jPanel6Layout.createSequentialGroup()
-                        .addGap(41, 41, 41)
-                        .addComponent(BtnLimpiarAsignacion)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(BtnLimpiarAsignacion, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(jPanel6Layout.createSequentialGroup()
+                                .addComponent(BtnGuardarAsignacion)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(BtnCancelarAsignacion)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)))
                 .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 876, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         jPanel6Layout.setVerticalGroup(
@@ -214,14 +266,14 @@ public class AsignacionPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel19)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(TxtIdEmpleado, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(tareaTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(BtnGuardarAsignacion)
                             .addComponent(BtnCancelarAsignacion))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(BtnLimpiarAsignacion)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addContainerGap(12, Short.MAX_VALUE))))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -239,7 +291,7 @@ public class AsignacionPanel extends javax.swing.JPanel {
     private void BtnGuardarAsignacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnGuardarAsignacionActionPerformed
         try (EntityManager em = PersistenceManager.getEntityManager()) {
             if (!TxtFechaFinA.getText().equals("")
-                    && !TxtIdEmpleado.getText().equals("") && !TxtIdEmpleado1.getText().equals("")
+                    && !tareaTxt.getText().equals("") && !TxtIdEmpleado1.getText().equals("")
                     && !TxtIdProyecto.getText().equals("")) {
 
                 asignaciones = new Asignaciones();
@@ -271,7 +323,7 @@ public class AsignacionPanel extends javax.swing.JPanel {
                 asignaciones.setProyecto(proyecto);
 
                 // Capturar tarea y guardar en la base de datos
-                asignaciones.setTarea(TxtIdEmpleado.getText());
+                asignaciones.setTarea(tareaTxt.getText());
 
                 asignacionService.create(em, asignaciones);
 
@@ -282,18 +334,38 @@ public class AsignacionPanel extends javax.swing.JPanel {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         } finally {
-            BtnLimpiarAsignacionActionPerformed(null);
             PersistenceManager.closeEntityManager(em);
-            // rellenarTabla();
+            rellenarTabla();
         }
     }//GEN-LAST:event_BtnGuardarAsignacionActionPerformed
 
     private void BtnLimpiarAsignacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnLimpiarAsignacionActionPerformed
-        // TODO add your handling code here:
+        TxtFechaInicioA1.setText("");
+        TxtFechaFinA.setText("");
+        TxtIdProyecto.setText("");
+        TxtIdEmpleado1.setText("");
+        tareaTxt.setText("");
     }//GEN-LAST:event_BtnLimpiarAsignacionActionPerformed
 
     private void BtnCancelarAsignacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnCancelarAsignacionActionPerformed
-        // TODO add your handling code here:
+        try (EntityManager em = PersistenceManager.getEntityManager()) {
+
+            asignacionService = new AsignacionService();
+
+            if (asignaciones.getId() != null) {
+                asignacionService.delete(em, asignaciones.getId());
+                JOptionPane.showMessageDialog(null, "Eliminado correctamente", "Error", JOptionPane.ERROR_MESSAGE);
+
+            } else {
+                JOptionPane.showMessageDialog(null, "Seleccione un elemento", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            PersistenceManager.closeEntityManager(em);
+            rellenarTabla();
+        }
     }//GEN-LAST:event_BtnCancelarAsignacionActionPerformed
 
     private void TxtFechaInicioA1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TxtFechaInicioA1ActionPerformed
@@ -307,7 +379,6 @@ public class AsignacionPanel extends javax.swing.JPanel {
     private javax.swing.JButton BtnLimpiarAsignacion;
     private javax.swing.JTextField TxtFechaFinA;
     private javax.swing.JTextField TxtFechaInicioA1;
-    private javax.swing.JTextField TxtIdEmpleado;
     private javax.swing.JTextField TxtIdEmpleado1;
     private javax.swing.JTextField TxtIdProyecto;
     private javax.swing.JLabel jLabel15;
@@ -318,5 +389,6 @@ public class AsignacionPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JTable jTable4;
+    private javax.swing.JTextField tareaTxt;
     // End of variables declaration//GEN-END:variables
 }

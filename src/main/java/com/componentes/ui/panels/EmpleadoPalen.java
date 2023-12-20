@@ -70,7 +70,7 @@ public class EmpleadoPalen extends javax.swing.JPanel {
 
     public void rellenarTabla() {
         try (EntityManager em = PersistenceManager.getEntityManager()) {
-            // Para Proyectos
+            // Para empleados 
             EmpleadoService empleadoService = new EmpleadoService();
 
             String[] columnsEmpleado = {"id", "Cedula", "Nombre", "Sexo", "Puesto", "Direccion", "Experiencia"};
